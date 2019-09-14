@@ -63,8 +63,26 @@
 		status = "okay";
 	};
 
+    i2c@3180000 {
+		status = "okay";
+		aic32x4_out: tlv320aic32x4.2-0018@18{
+		compatible = "ti,tlv320aic32x4";
+		status = "okay";
+		reg = <0x18>;
+		clocks = <&tegra_car TEGRA186_CLK_AUD_MCLK>;
+		clock-names = "mclk";
+		};
+	};
+
 	i2c@3160000 {
 		status = "okay";
+		aic32x4_in: tlv320aic32x4.0-0018@18{
+		    compatible = "ti,tlv320aic32x4";
+		    status = "okay";
+		    reg = <0x18>;
+		    clocks = <&tegra_car TEGRA186_CLK_AUD_MCLK>;
+		    clock-names = "mclk";
+		    };
 		lp8557_backlight: lp8557-backlight-s-wuxga-8-0@2c {
 			status = "disabled";
 			disable-on-kernel-charging;
@@ -922,10 +940,30 @@
 		nvidia,xbar = <&tegra_axbar>;
 
 		rt565x_dai_link: nvidia,dai-link-1 {
-			link-name = "rt565x-playback";
-			cpu-dai = <&tegra_i2s1>;
+		    link-name = "playback-i2s2";
+			cpu-dai = <&tegra_i2s2>;
+			codec-dai = <&aic32x4_out>;
+			cpu-dai-name = "I2S2";
+			codec-dai-name = "tlv320aic32x4-hifi";
+			tx-mask = <0xFF>;
+			rx-mask = <0xFF>;
+			format = "i2s";
+			bitclock-slave;
+			frame-slave;
+			bitclock-noninversion;
+			frame-noninversion;
+			bit-format = "s16_le";
+			bclk_ratio = <0>;
+			srate = <48000>;
+			num-channel = <1>;
+			ignore_suspend;
+			name-prefix = "x";
+			status = "okay";
+
+			/*link-name = "rt565x-playback";
+			cpu-dai = <&tegra_i2s2>;
 			codec-dai = <&spdif_dit0>;
-			cpu-dai-name = "I2S1";
+			cpu-dai-name = "I2S2";
 			codec-dai-name = "dit-hifi";
 			format = "i2s";
 			bit-format = "s16_le";
@@ -934,13 +972,14 @@
 			num-channel = <2>;
 			ignore_suspend;
 			name-prefix = "x";
-			status = "okay";
+			status = "okay";*/
 		};
+		
 		nvidia,dai-link-2 {
 			link-name = "spdif-dit-1";
-			cpu-dai = <&tegra_i2s2>;
+			cpu-dai = <&tegra_i2s1>;
 			codec-dai = <&spdif_dit1>;
-			cpu-dai-name = "I2S2";
+			cpu-dai-name = "I2S1";
 			codec-dai-name = "dit-hifi";
 			format = "i2s";
 			bit-format = "s16_le";
@@ -949,7 +988,7 @@
 			num-channel = <2>;
 			ignore_suspend;
 			name-prefix = "y";
-			status = "okay";
+			status = "disabled";
 		};
 		nvidia,dai-link-3 {
 			link-name = "spdif-dit-2";
@@ -964,7 +1003,7 @@
 			num-channel = <2>;
 			ignore_suspend;
 			name-prefix = "z";
-			status = "okay";
+			status = "disabled";
 		};
 		nvidia,dai-link-4 {
 			link-name = "spdif-dit-3";
@@ -979,7 +1018,7 @@
 			num-channel = <2>;
 			ignore_suspend;
 			name-prefix = "m";
-			status = "okay";
+			status = "disabled";
 		};
 		nvidia,dai-link-5 {
 			link-name = "spdif-dit-4";
@@ -994,7 +1033,7 @@
 			num-channel = <2>;
 			ignore_suspend;
 			name-prefix = "n";
-			status = "okay";
+			status = "disabled";
 		};
 		nvidia,dai-link-6 {
 			link-name = "spdif-dit-6";
@@ -1012,7 +1051,7 @@
 			num-channel = <1>;
 			ignore_suspend;
 			name-prefix = "o";
-			status = "okay";
+			status = "disabled";
 		};
 		nvidia,dai-link-7 {
 			link-name = "spdif-dit-7";
@@ -1026,7 +1065,7 @@
 			ignore_suspend;
 			num-channel = <2>;
 			name-prefix = "a";
-			status = "okay";
+			status = "disabled";
 		};
 		nvidia,dai-link-8 {
 			link-name = "spdif-dit-8";
@@ -1040,7 +1079,7 @@
 			ignore_suspend;
 			num-channel = <2>;
 			name-prefix = "b";
-			status = "okay";
+			status = "disabled";
 		};
 		nvidia,dai-link-9 {
 			link-name = "spdif-dit-9";
@@ -1054,7 +1093,7 @@
 			ignore_suspend;
 			num-channel = <2>;
 			name-prefix = "c";
-			status = "okay";
+			status = "disabled";
 		};
 		nvidia,dai-link-10 {
 			link-name = "spdif-dit-10";
@@ -1068,7 +1107,7 @@
 			ignore_suspend;
 			num-channel = <2>;
 			name-prefix = "d";
-			status = "okay";
+			status = "disabled";
 		};
 		dspk_1_dai_link: nvidia,dai-link-11 {
 			link-name = "dspk-playback-r";
@@ -1082,7 +1121,7 @@
 			num-channel = <2>;
 			ignore_suspend;
 			name-prefix = "d1";
-			status = "okay";
+			status = "disabled";
 		};
 		dspk_2_dai_link: nvidia,dai-link-12 {
 			link-name = "dspk-playback-l";
@@ -1096,8 +1135,8 @@
 			num-channel = <2>;
 			ignore_suspend;
 			name-prefix = "d2";
-			status = "okay";
-                };
+			status = "disabled";
+        };  
 	};
 
 	backlight {

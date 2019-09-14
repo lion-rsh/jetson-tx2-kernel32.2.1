@@ -287,7 +287,8 @@ int tegra_alt_asoc_utils_set_parent(struct tegra_asoc_audio_clock_info *data,
 			return ret;
 		}
 
-		ret = clk_set_rate(data->clk_cdev1, 13000000);
+		//ret = clk_set_rate(data->clk_cdev1, 13000000);
+		ret = clk_set_rate(data->clk_cdev1, 12000000);
 		if (ret) {
 			dev_err(data->dev, "Can't set clk rate");
 			return ret;

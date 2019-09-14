@@ -251,7 +251,8 @@ static const struct snd_kcontrol_new in3l_to_rmixer_controls[] = {
 };
 
 static const struct snd_soc_dapm_widget aic32x4_dapm_widgets[] = {
-	SND_SOC_DAPM_DAC("Left DAC", "Left Playback", AIC32X4_DACSETUP, 7, 0),
+	//SND_SOC_DAPM_DAC("Left DAC", "Left Playback", AIC32X4_DACSETUP, 7, 0),
+	SND_SOC_DAPM_DAC("Left DAC", "Playback", AIC32X4_DACSETUP, 7, 0),
 	SND_SOC_DAPM_MIXER("HPL Output Mixer", SND_SOC_NOPM, 0, 0,
 			   &hpl_output_mixer_controls[0],
 			   ARRAY_SIZE(hpl_output_mixer_controls)),
@@ -262,7 +263,8 @@ static const struct snd_soc_dapm_widget aic32x4_dapm_widgets[] = {
 			   ARRAY_SIZE(lol_output_mixer_controls)),
 	SND_SOC_DAPM_PGA("LOL Power", AIC32X4_OUTPWRCTL, 3, 0, NULL, 0),
 
-	SND_SOC_DAPM_DAC("Right DAC", "Right Playback", AIC32X4_DACSETUP, 6, 0),
+	//SND_SOC_DAPM_DAC("Right DAC", "Right Playback", AIC32X4_DACSETUP, 6, 0),
+	SND_SOC_DAPM_DAC("Right DAC", "Playback", AIC32X4_DACSETUP, 6, 0),
 	SND_SOC_DAPM_MIXER("HPR Output Mixer", SND_SOC_NOPM, 0, 0,
 			   &hpr_output_mixer_controls[0],
 			   ARRAY_SIZE(hpr_output_mixer_controls)),
@@ -272,7 +274,8 @@ static const struct snd_soc_dapm_widget aic32x4_dapm_widgets[] = {
 			   ARRAY_SIZE(lor_output_mixer_controls)),
 	SND_SOC_DAPM_PGA("LOR Power", AIC32X4_OUTPWRCTL, 2, 0, NULL, 0),
 
-	SND_SOC_DAPM_ADC("Right ADC", "Right Capture", AIC32X4_ADCSETUP, 6, 0),
+	//SND_SOC_DAPM_ADC("Right ADC", "Right Capture", AIC32X4_ADCSETUP, 6, 0),
+	SND_SOC_DAPM_ADC("Right ADC", "Capture", AIC32X4_ADCSETUP, 6, 0),
 	SND_SOC_DAPM_MUX("IN1_R to Right Mixer Positive Resistor", SND_SOC_NOPM, 0, 0,
 			in1r_to_rmixer_controls),
 	SND_SOC_DAPM_MUX("IN2_R to Right Mixer Positive Resistor", SND_SOC_NOPM, 0, 0,
@@ -288,7 +291,8 @@ static const struct snd_soc_dapm_widget aic32x4_dapm_widgets[] = {
 	SND_SOC_DAPM_MUX("IN3_L to Right Mixer Negative Resistor", SND_SOC_NOPM, 0, 0,
 			in3l_to_rmixer_controls),
 
-	SND_SOC_DAPM_ADC("Left ADC", "Left Capture", AIC32X4_ADCSETUP, 7, 0),
+	//SND_SOC_DAPM_ADC("Left ADC", "Left Capture", AIC32X4_ADCSETUP, 7, 0),
+	SND_SOC_DAPM_ADC("Left ADC", "Capture", AIC32X4_ADCSETUP, 7, 0),
 	SND_SOC_DAPM_MUX("IN1_L to Left Mixer Positive Resistor", SND_SOC_NOPM, 0, 0,
 			in1l_to_lmixer_controls),
 	SND_SOC_DAPM_MUX("IN2_L to Left Mixer Positive Resistor", SND_SOC_NOPM, 0, 0,
@@ -423,12 +427,14 @@ static const struct regmap_range_cfg aic32x4_regmap_pages[] = {
 		.window_start = 0,
 		.window_len = 128,
 		.range_min = 0,
-		.range_max = AIC32X4_RMICPGAVOL,
+		.range_max = 0xFB,
+		//.range_max = AIC32X4_RMICPGAVOL,
 	},
 };
 
 const struct regmap_config aic32x4_regmap_config = {
-	.max_register = AIC32X4_RMICPGAVOL,
+	//.max_register = AIC32X4_RMICPGAVOL,
+	.max_register = 0xFB,
 	.ranges = aic32x4_regmap_pages,
 	.num_ranges = ARRAY_SIZE(aic32x4_regmap_pages),
 };
@@ -536,7 +542,7 @@ static int aic32x4_hw_params(struct snd_pcm_substream *substream,
 		printk(KERN_ERR "aic32x4: sampling rate not supported\n");
 		return i;
 	}
-
+#if 0
 	/* Use PLL as CODEC_CLKIN and DAC_MOD_CLK as BDIV_CLKIN */
 	snd_soc_write(codec, AIC32X4_CLKMUX, AIC32X4_PLLCLKIN);
 	snd_soc_write(codec, AIC32X4_IFACE3, AIC32X4_DACMOD2BCLK);
@@ -602,7 +608,7 @@ static int aic32x4_hw_params(struct snd_pcm_substream *substream,
 		break;
 	}
 	snd_soc_write(codec, AIC32X4_IFACE1, data);
-
+#endif
 	if (params_channels(params) == 1) {
 		data = AIC32X4_RDAC2LCHN | AIC32X4_LDAC2LCHN;
 	} else {
@@ -666,8 +672,8 @@ static int aic32x4_set_bias_level(struct snd_soc_codec *codec,
 				    AIC32X4_MADCEN, AIC32X4_MADCEN);
 
 		/* Switch on BCLK_N Divider */
-		snd_soc_update_bits(codec, AIC32X4_BCLKN,
-				    AIC32X4_BCLKEN, AIC32X4_BCLKEN);
+		//snd_soc_update_bits(codec, AIC32X4_BCLKN,
+				    //AIC32X4_BCLKEN, AIC32X4_BCLKEN);
 		break;
 	case SND_SOC_BIAS_PREPARE:
 		break;
@@ -697,7 +703,7 @@ static int aic32x4_set_bias_level(struct snd_soc_codec *codec,
 				    AIC32X4_PLLEN, 0);
 
 		/* Switch off master clock */
-		clk_disable_unprepare(aic32x4->mclk);
+		//clk_disable_unprepare(aic32x4->mclk);
 		break;
 	case SND_SOC_BIAS_OFF:
 		break;
@@ -747,10 +753,10 @@ static int aic32x4_codec_probe(struct snd_soc_codec *codec)
 	snd_soc_write(codec, AIC32X4_RESET, 0x01);
 
 	/* Power platform configuration */
-	if (aic32x4->power_cfg & AIC32X4_PWR_MICBIAS_2075_LDOIN) {
+	//if (aic32x4->power_cfg & AIC32X4_PWR_MICBIAS_2075_LDOIN) {
 		snd_soc_write(codec, AIC32X4_MICBIAS, AIC32X4_MICBIAS_LDOIN |
 						      AIC32X4_MICBIAS_2075V);
-	}
+	//}
 	if (aic32x4->power_cfg & AIC32X4_PWR_AVDD_DVDD_WEAK_DISABLE)
 		snd_soc_write(codec, AIC32X4_PWRCFG, AIC32X4_AVDDWEAKDISABLE);
 
@@ -816,7 +822,7 @@ static int aic32x4_parse_dt(struct aic32x4_priv *aic32x4,
 
 	return 0;
 }
-
+#if 0
 static void aic32x4_disable_regulators(struct aic32x4_priv *aic32x4)
 {
 	regulator_disable(aic32x4->supply_iov);
@@ -830,7 +836,8 @@ static void aic32x4_disable_regulators(struct aic32x4_priv *aic32x4)
 	if (!IS_ERR(aic32x4->supply_av))
 		regulator_disable(aic32x4->supply_av);
 }
-
+#endif
+#if 0
 static int aic32x4_setup_regulators(struct device *dev,
 		struct aic32x4_priv *aic32x4)
 {
@@ -916,7 +923,7 @@ error_ldo:
 	regulator_disable(aic32x4->supply_iov);
 	return ret;
 }
-
+#endif
 int aic32x4_probe(struct device *dev, struct regmap *regmap)
 {
 	struct aic32x4_priv *aic32x4;
@@ -964,18 +971,18 @@ int aic32x4_probe(struct device *dev, struct regmap *regmap)
 		if (ret != 0)
 			return ret;
 	}
-
+/*
 	ret = aic32x4_setup_regulators(dev, aic32x4);
 	if (ret) {
 		dev_err(dev, "Failed to setup regulators\n");
 		return ret;
 	}
-
+*/
 	ret = snd_soc_register_codec(dev,
 			&soc_codec_dev_aic32x4, &aic32x4_dai, 1);
 	if (ret) {
 		dev_err(dev, "Failed to register codec\n");
-		aic32x4_disable_regulators(aic32x4);
+		//aic32x4_disable_regulators(aic32x4);
 		return ret;
 	}
 
@@ -985,9 +992,9 @@ EXPORT_SYMBOL(aic32x4_probe);
 
 int aic32x4_remove(struct device *dev)
 {
-	struct aic32x4_priv *aic32x4 = dev_get_drvdata(dev);
+	//struct aic32x4_priv *aic32x4 = dev_get_drvdata(dev);
 
-	aic32x4_disable_regulators(aic32x4);
+	//aic32x4_disable_regulators(aic32x4);
 
 	snd_soc_unregister_codec(dev);
 

@@ -534,7 +534,7 @@ static int tegra_machine_dai_init(struct snd_soc_pcm_runtime *runtime,
 	if (err < 0)
 		return err;
 
-	rtd = snd_soc_get_pcm_runtime(card, "rt565x-playback");
+	rtd = snd_soc_get_pcm_runtime(card, "playback-i2s2");
 	if (rtd) {
 		dai_params =
 		(struct snd_soc_pcm_stream *)rtd->dai_link->params;
@@ -551,6 +551,7 @@ static int tegra_machine_dai_init(struct snd_soc_pcm_runtime *runtime,
 				return err;
 			}
 		}
+		printk("card:====== playback-i2s2 =======\n");
 	}
 
 	rtd = snd_soc_get_pcm_runtime(card, "rt565x-codec-sysclk-bclk1");
@@ -892,12 +893,12 @@ static void dai_link_setup(struct platform_device *pdev)
 		&machine->num_codec_links);
 	if (!tegra_machine_codec_links)
 		goto err_alloc_dai_link;
-
+    printk(KERN_INFO "dai_link_setup:====playback-i2s2 =====\n");
 	/* set codec init */
 	for (i = 0; i < machine->num_codec_links; i++) {
 		if (tegra_machine_codec_links[i].name) {
 			if (strstr(tegra_machine_codec_links[i].name,
-				"rt565x-playback") ||
+				"playback-i2s2") ||
 			    strstr(tegra_machine_codec_links[i].name,
 				"rt565x-codec-sysclk-bclk1")) {
 				codec_dai_name =
@@ -1013,7 +1014,7 @@ static int tegra_machine_driver_probe(struct platform_device *pdev)
 	struct tegra_machine *machine;
 	int ret = 0;
 	const struct of_device_id *match;
-
+    printk("===== tegra_machine_driver_probe ======\n");
 	card->dev = &pdev->dev;
 	/* parse card name first to log errors with proper device name */
 	ret = snd_soc_of_parse_card_name(card, "nvidia,model");
