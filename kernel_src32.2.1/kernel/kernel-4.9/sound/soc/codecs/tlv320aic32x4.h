@@ -13,7 +13,7 @@
 struct device;
 struct regmap_config;
 
-extern const struct regmap_config aic32x4_regmap_config;
+extern const struct regmap_config aic32x4_regmap; //  aic32x4_regmap_config
 int aic32x4_probe(struct device *dev, struct regmap *regmap);
 int aic32x4_remove(struct device *dev);
 

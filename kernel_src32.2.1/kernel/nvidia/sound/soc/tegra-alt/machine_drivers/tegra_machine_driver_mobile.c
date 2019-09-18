@@ -273,6 +273,11 @@ static const struct snd_soc_dapm_widget tegra_machine_dapm_widgets[] = {
 	SND_SOC_DAPM_MIC("c Mic", NULL),
 	SND_SOC_DAPM_MIC("d Mic", NULL),
 	SND_SOC_DAPM_MIC("s Mic", NULL),
+
+	SND_SOC_DAPM_LINE("x IN",NULL),
+	SND_SOC_DAPM_LINE("x OUT",NULL),
+	SND_SOC_DAPM_LINE("y Mic",NULL),
+	SND_SOC_DAPM_LINE("y Headphone",NULL),
 };
 
 static const struct snd_kcontrol_new tegra_machine_controls[] = {
@@ -545,13 +550,33 @@ static int tegra_machine_dai_init(struct snd_soc_pcm_runtime *runtime,
 
 		if (machine->is_hs_supported) {
 			err = snd_soc_dai_set_sysclk(rtd->codec_dai,
-			RT5659_SCLK_S_MCLK, clk_out_rate, SND_SOC_CLOCK_IN);
+			0, 12000000, SND_SOC_CLOCK_IN);//modify RT5659_SCLK_S_MCLK->0;clk_out_rate->12000000
 			if (err < 0) {
 				dev_err(card->dev, "codec_dai clock not set\n");
 				return err;
 			}
 		}
-		printk("card:====== playback-i2s2 =======\n"); //add printk
+		printk(KERN_ERR "card:====== playback-i2s2 =======\n"); //add printk
+	}
+
+	rtd = snd_soc_get_pcm_runtime(card, "record-i2s1");
+	if (rtd) {
+		dai_params =
+		(struct snd_soc_pcm_stream *)rtd->dai_link->params;
+
+		dai_params->rate_min = clk_rate;
+		dai_params->formats = (machine->fmt_via_kcontrol == 2) ?
+			(1ULL << SNDRV_PCM_FORMAT_S32_LE) : formats;
+
+		if (machine->is_hs_supported) {
+			err = snd_soc_dai_set_sysclk(rtd->codec_dai,
+			0, 12000000, SND_SOC_CLOCK_IN);//modify RT5659_SCLK_S_MCLK->0;clk_out_rate->12000000
+			if (err < 0) {
+				dev_err(card->dev, "codec_dai clock not set\n");
+				return err;
+			}
+		}
+		printk(KERN_ERR "card:====== record-i2s1 =======\n"); //add printk
 	}
 
 	rtd = snd_soc_get_pcm_runtime(card, "rt565x-codec-sysclk-bclk1");
@@ -569,7 +594,7 @@ static int tegra_machine_dai_init(struct snd_soc_pcm_runtime *runtime,
 			dev_err(card->dev, "codec_dai clock not set\n");
 			return err;
 		}
-		printk("card:====== rt565x-codec-sysclk-bclk1 =======\n"); //add printk
+		printk(KERN_ERR "card:====== rt565x-codec-sysclk-bclk1 =======\n"); //add printk
 	}
 #if 0 //modify by lk 
 	/* TODO: remove below spdif links if clk_rate is passed
@@ -820,16 +845,17 @@ static int tegra_machine_fepi_init(struct snd_soc_pcm_runtime *rtd)
 static int tegra_machine_rt565x_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct tegra_machine *machine = snd_soc_card_get_drvdata(card);
+	//struct tegra_machine *machine = snd_soc_card_get_drvdata(card);
 	struct snd_soc_jack *jack;
 	int err;
-
+/*
 	err = tegra_alt_asoc_utils_set_extern_parent(&machine->audio_clock,
 							"pll_a_out0");
 	if (err < 0) {
 		dev_err(card->dev, "Failed to set extern clk parent\n");
 		return err;
 	}
+*/
 
 	jack = devm_kzalloc(card->dev, sizeof(struct snd_soc_jack), GFP_KERNEL);
 	if (!jack)
@@ -847,13 +873,13 @@ static int tegra_machine_rt565x_init(struct snd_soc_pcm_runtime *rtd)
 		dev_err(card->dev, "Failed to add jack control: %d\n", err);
 		return err;
 	}
-
+/*
 	err = rt5659_set_jack_detect(rtd->codec, jack);
 	if (err) {
 		dev_err(card->dev, "Failed to set jack for RT565x: %d\n", err);
 		return err;
 	}
-
+*/
 	/* single button supporting play/pause */
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_MEDIA);
 
@@ -904,11 +930,11 @@ static void dai_link_setup(struct platform_device *pdev)
 		goto err_alloc_dai_link;
 	}
 
-    printk(KERN_INFO "dai_link_setup:====playback-i2s2 =====\n");
+    printk(KERN_INFO "dai_link_setup:====playback-i2s1/2 =====\n");
     /* set codec init */
     for (i = 0; i < machine->num_codec_links; i++) {
 		if (tegra_machine_codec_links[i].name) {
-			if (strstr(tegra_machine_codec_links[i].name,"playback-i2s2") ||strstr(tegra_machine_codec_links[i].name,"rt565x-codec-sysclk-bclk1")) {
+			if (strstr(tegra_machine_codec_links[i].name,"playback-i2s2") ||strstr(tegra_machine_codec_links[i].name,"record-i2s1")) {
 				codec_dai_name = tegra_machine_codec_links[i].codec_dai_name;
 				if (!strcmp("dit-hifi", codec_dai_name)) {
 					dev_info(&pdev->dev, "This is a dummy codec\n");
@@ -1012,7 +1038,7 @@ static int tegra_machine_driver_probe(struct platform_device *pdev)
 	struct tegra_machine *machine;
 	int ret = 0;
 	const struct of_device_id *match;
-    printk("===== tegra_machine_driver_probe ======\n");
+    printk(KERN_ERR "===== tegra_machine_driver_probe ======\n");
 	card->dev = &pdev->dev;
 	/* parse card name first to log errors with proper device name */
 	ret = snd_soc_of_parse_card_name(card, "nvidia,model");

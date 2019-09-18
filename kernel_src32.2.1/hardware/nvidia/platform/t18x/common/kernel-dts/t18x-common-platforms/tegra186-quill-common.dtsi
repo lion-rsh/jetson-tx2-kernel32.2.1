@@ -918,10 +918,14 @@
 
 		status = "okay";
 		nvidia,audio-routing =
-			"x Headphone",		"x OUT",
-			"x IN",			"x Mic",
-			"y Headphone",		"y OUT",
-			"y IN",			"y Mic",
+			"x IN2_R",		"x IN",
+			"x IN2_L",	    "x IN",
+			"x OUT",        "x LOR",
+			"x OUT",        "x LOL",
+			"y IN2_R",		"y Mic",
+			"y IN2_L",		"y Mic",
+			"y Headphone",  "y LOR",
+			"y Headphone",  "y LOL",
 			"z Headphone",		"z OUT",
 			"z IN",			"z Mic",
 			"m Headphone",		"m OUT",
@@ -976,7 +980,27 @@
 		};
 		
 		nvidia,dai-link-2 {
-			link-name = "spdif-dit-1";
+		    link-name = "record-i2s1";
+			cpu-dai = <&tegra_i2s1>;
+			codec-dai = <&aic32x4_in>;
+			cpu-dai-name = "I2S1";
+			codec-dai-name = "tlv320aic32x4-hifi";
+			tx-mask = <0xFF>;
+			rx-mask = <0xFF>;
+			format = "i2s";
+			bitclock-slave;
+			frame-slave;
+			bitclock-noninversion;
+			frame-noninversion;
+			bit-format = "s16_le";
+			bclk_ratio = <0>;
+			srate = <48000>;
+			num-channel = <1>;
+			ignore_suspend;
+			name-prefix = "y";
+			status = "okay";
+
+			/*link-name = "spdif-dit-1";
 			cpu-dai = <&tegra_i2s1>;
 			codec-dai = <&spdif_dit1>;
 			cpu-dai-name = "I2S1";
@@ -988,7 +1012,7 @@
 			num-channel = <2>;
 			ignore_suspend;
 			name-prefix = "y";
-			status = "disabled";
+			status = "disabled";*/
 		};
 		nvidia,dai-link-3 {
 			link-name = "spdif-dit-2";
